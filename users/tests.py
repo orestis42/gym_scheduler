@@ -1,32 +1,38 @@
-from django.contrib.auth.models import User
-from django.test import TestCase
-from .models import UserProfile, MembershipType
+from django.test import TestCase, Client
+from django.urls import reverse
+from django.contrib.auth import get_user_model
+from users.models import CustomUser
 
-class UserProfileModelTest(TestCase):
+class CustomUserModelTest(TestCase):
     def setUp(self):
-        # Create a User and UserProfile for use in the tests
-        self.user = User.objects.create_user('testuser', 'test@example.com', 'testpassword')
-        self.user_profile = UserProfile.objects.create(user=self.user, membership_type=MembershipType.REGULAR)
+        self.user = CustomUser.objects.create_user(
+            name='Test User',
+            email='test@test.com',
+            password='testpass123',
+            membership_type='R',
+        )
 
-    def test_create_user_profile(self):
-        # Retrieve the UserProfile
-        user_profile = UserProfile.objects.get(user=self.user)
+        self.superuser = CustomUser.objects.create_superuser(
+            name='Super User',
+            email='super@test.com',
+            password='testpass123',
+        )
 
-        # Check that the UserProfile was created correctly
-        self.assertEqual(user_profile.user.username, 'testuser')
-        self.assertEqual(user_profile.membership_type, MembershipType.REGULAR)
+    def test_user_creation(self):
+        self.assertEqual(f'{self.user.name}', 'Test User')
+        self.assertEqual(f'{self.user.email}', 'test@test.com')
+        self.assertEqual(f'{self.user.membership_type}', 'R')
 
-    def test_change_membership_type(self):
-        # Change the membership type
-        self.user_profile.membership_type = MembershipType.PREMIUM
-        self.user_profile.save()
+    def test_superuser_creation(self):
+        self.assertEqual(f'{self.superuser.name}', 'Super User')
+        self.assertEqual(f'{self.superuser.email}', 'super@test.com')
+        self.assertTrue(self.superuser.is_superuser)
+        self.assertTrue(self.superuser.is_staff)
 
-        # Retrieve the updated UserProfile
-        updated_user_profile = UserProfile.objects.get(user=self.user)
-
-        # Check that the membership type was updated correctly
-        self.assertEqual(updated_user_profile.membership_type, MembershipType.PREMIUM)
-
-    def test_str_method(self):
-        # Check the output of the __str__ method
-        self.assertEqual(str(self.user_profile), 'testuser')
+    def test_default_membership_type(self):
+        user = CustomUser.objects.create_user(
+            name='Test User 2',
+            email='test2@test.com',
+            password='testpass123',
+        )
+        self.assertEqual(f'{user.membership_type}', 'R')

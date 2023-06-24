@@ -1,9 +1,12 @@
 from django.contrib.auth import authenticate
+from django.contrib.auth.backends import BaseBackend
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import UserRegistrationSerializer
+from .models import CustomUser
+
 
 class UserRegistrationView(APIView):
     def post(self, request):
@@ -18,11 +21,17 @@ class UserRegistrationView(APIView):
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class EmailBackend(BaseBackend):
+    def authenticate(self, request, email=None, password=None, **kwargs):
+        user = CustomUser.objects.get(email=email)
+        if user.check_password(password):
+            return user
+
 class UserLoginView(APIView):
     def post(self, request):
-        username = request.data.get('username')
+        email = request.data.get('email')
         password = request.data.get('password')
-        user = authenticate(username=username, password=password)
+        user = EmailBackend().authenticate(request, email=email, password=password)
         if user:
             refresh = RefreshToken.for_user(user)
             response_data = {
@@ -31,3 +40,4 @@ class UserLoginView(APIView):
             }
             return Response(response_data, status=status.HTTP_200_OK)
         return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+

@@ -1,0 +1,34 @@
+# Ignore compiled Python files
+*.pyc
+__pycache__/
+
+# Ignore the SQLite database
+*.sqlite3
+
+# Ignore environment-specific settings files
+.gym_scheduler/gym_scheduler/settings.py
+
+# Ignore local development settings
+.gym_scheduler/gym_scheduler/local_settings.py
+
+# Ignore logs
+.gym_scheduler/logs/
+
+# Ignore media files
+.gym_scheduler/media/
+
+# Ignore static files
+.gym_scheduler/static/
+
+# Ignore dependencies
+.gym_scheduler/venv/
+.gym_scheduler/.venv/
+.gym_scheduler/node_modules/
+
+# Ignore IDE-specific files and directories
+.gym_scheduler/.idea/
+.gym_scheduler/.vscode/
+
+# Ignore any other generated or temporary files/directories
+*.swp
+.DS_Store

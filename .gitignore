@@ -19,3 +19,5 @@ __pycache__/
 # Ignore any other generated or temporary files/directories
 *.swp
 .DS_Store
+users/__pycache__/models.cpython-310.pyc
+users/__pycache__/serializers.cpython-310.pyc

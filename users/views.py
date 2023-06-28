@@ -1,17 +1,20 @@
 from django.contrib.auth.backends import BaseBackend
 from django.shortcuts import get_object_or_404
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
-from rest_framework.exceptions import AuthenticationFailed
-from .serializers import UserRegistrationSerializer
-from .models import CustomUser
+from users.serializers import UserRegistrationSerializer
+from users.models import CustomUser
+from users.permissions import IsUnauthenticated
 
 
 class UserRegistrationView(APIView):
+    permission_classes = [IsUnauthenticated]
     def post(self, request):
         serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid():
@@ -31,6 +34,7 @@ class EmailBackend(BaseBackend):
             return user
 
 class UserLoginView(APIView):
+    permission_classes = [IsUnauthenticated]
     def post(self, request):
         email = request.data.get('email')
         password = request.data.get('password')
@@ -48,6 +52,7 @@ class UserLoginView(APIView):
         return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
 class UserLogoutView(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request, *args, **kwargs):
         refresh_token = request.data.get('refresh')
 

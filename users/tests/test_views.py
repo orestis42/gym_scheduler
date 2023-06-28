@@ -1,9 +1,10 @@
-from rest_framework.test import APITestCase, APIClient
-from rest_framework import status
 from django.urls import reverse
-from users.models import CustomUser
+from rest_framework import status
+from rest_framework.test import APITestCase, APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
+from users.models import CustomUser
+
 
 class UserRegistrationViewTest(APITestCase):
     def setUp(self):
@@ -33,7 +34,6 @@ class UserRegistrationViewTest(APITestCase):
         }
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
 
 class UserLoginViewTest(APITestCase):
     def setUp(self):
@@ -80,21 +80,20 @@ class UserLogoutViewTestCase(APITestCase):
         self.refresh_token = str(RefreshToken.for_user(self.user))
 
     def test_logout_with_valid_token(self):
-        token = RefreshToken(self.refresh_token)
-        token_id = token['jti']
-        url = reverse('logout')
-        data = {'refresh': self.refresh_token}
-        response = self.client.post(url, data)
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertTrue(BlacklistedToken.objects.filter(token__jti=token_id).exists())
+            refresh = RefreshToken.for_user(self.user)
+            self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}') # type: ignore
+            url = reverse('logout')
+            response = self.client.post(url, {'refresh': str(refresh)}, format='json')
+            self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+            self.assertTrue(BlacklistedToken.objects.filter(token__jti=refresh.payload['jti']).exists())
 
     def test_logout_with_invalid_token(self):
         url = reverse('logout')
         data = {'refresh': 'invalid_token'}
         response = self.client.post(url, data)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_logout_without_token(self):
         url = reverse('logout')
         response = self.client.post(url)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

@@ -22,3 +22,8 @@ __pycache__/
 .DS_Store
 users/__pycache__/models.cpython-310.pyc
 users/__pycache__/serializers.cpython-310.pyc
+bookings/__pycache__/models.cpython-310.pyc
+users/__pycache__/admin.cpython-310.pyc
+users/__pycache__/serializers.cpython-310.pyc
+users/__pycache__/views.cpython-310.pyc
+db.sqlite3

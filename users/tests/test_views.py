@@ -60,7 +60,7 @@ class UserLoginViewTest(APITestCase):
         url = reverse('login')
         data = {'email': 'nonexisting@test.com', 'password': 'testpass123'}
         response = self.client.post(url, data)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_login_wrong_password(self):
         url = reverse('login')

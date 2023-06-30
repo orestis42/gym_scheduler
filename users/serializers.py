@@ -1,4 +1,5 @@
 from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.models import BaseUserManager
 from rest_framework import serializers
 from users.models import CustomUser
 
@@ -26,6 +27,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return user
 
     def validate(self, data):
+        email = BaseUserManager.normalize_email(data['email'])
         if CustomUser.objects.filter(email=data['email']).exists():
             raise serializers.ValidationError({"email": "A user with this email already exists."})
         return data

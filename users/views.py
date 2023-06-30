@@ -1,5 +1,4 @@
-from django.contrib.auth.backends import BaseBackend
-from django.shortcuts import get_object_or_404
+from django.contrib.auth import authenticate
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
@@ -9,7 +8,6 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
 from users.serializers import UserRegistrationSerializer
-from users.models import CustomUser
 from users.permissions import IsUnauthenticated
 
 
@@ -27,18 +25,12 @@ class UserRegistrationView(APIView):
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class EmailBackend(BaseBackend):
-    def authenticate(self, request, email=None, password=None, **kwargs):
-        user = get_object_or_404(CustomUser, email=email)
-        if password is not None and user.check_password(password):
-            return user
-
 class UserLoginView(APIView):
     permission_classes = [IsUnauthenticated]
     def post(self, request):
         email = request.data.get('email')
         password = request.data.get('password')
-        user = EmailBackend().authenticate(request, email=email, password=password)
+        user = authenticate(request, email=email, password=password)
         if user is not None:
             if user.is_active:
                 refresh = RefreshToken.for_user(user)
